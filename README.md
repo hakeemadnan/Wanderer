@@ -35,4 +35,3 @@ Then open: http://localhost:3000
 - Node.js  
 - Express.js  
 - JavaScript
-- 
