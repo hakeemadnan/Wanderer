@@ -34,7 +34,5 @@ Then open: http://localhost:3000
 ## 🛠️ Tech Stack
 - Node.js  
 - Express.js  
-- JavaScript  
-
-## 📄 License
-MIT
+- JavaScript
+- 
