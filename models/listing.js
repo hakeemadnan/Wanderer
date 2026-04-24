@@ -9,8 +9,8 @@ const ListingSchema = new Schema({
     description:String,
     image:{
         type:String,
-        default:"https://unsplash.com/photos/golden-sunset-over-a-dark-calm-ocean-Sc3Wmw43Z8E",
-        set: (v) => v ==="" ? "https://unsplash.com/photos/golden-sunset-over-a-dark-calm-ocean-Sc3Wmw43Z8E" : v,
+        default:"https://images.unsplash.com/photo-1601919051950-bb9f3ffb3fee?q=80&w=688&auto=format&fit=crop",
+        set: (v) => v ==="" ? "https://images.unsplash.com/photo-1601919051950-bb9f3ffb3fee?q=80&w=688&auto=format&fit=crop" : v,
     },
     price:Number,
     location:String,
