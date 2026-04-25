@@ -13,6 +13,7 @@ const { stat } = require('fs');
 app.set("view engine","ejs");
 app.set("views",path.join(__dirname,"views"));
 app.use(express.urlencoded({extended:true}));
+app.use(express.json());
 app.use(methodOverride("_method"));
 app.engine("ejs",ejsMate)
 app.use(express.static(path.join(__dirname,"/public")));
@@ -71,11 +72,16 @@ app.post("/listings",wrapAsync(async (req,res,next) =>{
     // let {title,description,image,price,country,location} = req.body;
     // let listing =req.body.listing;
     // console.log(listing);
+    //    console.log(req.body);
+        console.log("BODY:", req.body);
+         console.log("HEADERS:", req.headers["content-type"]);
+        if(!req.body.listing){
+            throw new ExpressError(400,"Send valid data for listing");
+        }
         const newList = new Listing(req.body.listing);
         await newList.save();
         res.redirect("/listings");
-    })
-);
+}));
 
 
 //Edit route
@@ -87,6 +93,9 @@ app.get("/listings/:id/edit",wrapAsync(async (req,res) =>{
 
 //update route
 app.put("/listings/:id", wrapAsync(async(req,res) =>{
+    if(!req.body.listing){
+        throw new ExpressError(400,"Send valid data for listing");
+    }
     let {id} = req.params;
     await Listing.findByIdAndUpdate(id,{...req.body.listing});
     res.redirect(`/listings/${id}`);
