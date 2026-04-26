@@ -73,8 +73,8 @@ app.post("/listings",wrapAsync(async (req,res,next) =>{
     // let listing =req.body.listing;
     // console.log(listing);
     //    console.log(req.body);
-        console.log("BODY:", req.body);
-         console.log("HEADERS:", req.headers["content-type"]);
+        // console.log("BODY:", req.body);
+        //  console.log("HEADERS:", req.headers["content-type"]);
         if(!req.body.listing){
             throw new ExpressError(400,"Send valid data for listing");
         }
@@ -119,7 +119,8 @@ app.use((req,res,next) =>{
  app.use((err,req,res,next) =>{
     console.log(err);
     let {statusCode=500, message="ERROR"} = err;
-    res.status(statusCode).send(message);
+    res.status(statusCode).render("error.ejs",{ message });
+    // res.status(statusCode).send(message);
  });
 
  app.listen(8080,() =>{
