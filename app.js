@@ -1,3 +1,7 @@
+if(process.env.NODE_ENV !="production"){
+  require('dotenv').config();
+}
+// console.log(process.env.SECRET)
 const express = require("express");
 const mongoose = require("mongoose");
 const app = express();
@@ -27,6 +31,7 @@ app.use(express.json());
 app.use(methodOverride("_method"));
 app.engine("ejs", ejsMate);
 app.use(express.static(path.join(__dirname, "/public")));
+
 
 const MONGO_URL = "mongodb://127.0.0.1:27017/wanderlust";
 main()
