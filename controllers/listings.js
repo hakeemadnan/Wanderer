@@ -1,9 +1,9 @@
 const Listing = require("../models/listing");
 const ExpressError = require("../utils/ExpressError.js");
 const { listingSchema, reviewSchema } = require("../schema.js");
-const mbxGeocoding = require('@mapbox/mapbox-sdk/services/geocoding');
+const mbxGeocoding = require("@mapbox/mapbox-sdk/services/geocoding");
 const mapToken = process.env.MAP_TOKEN;
-const geocodingClient= mbxGeocoding({accessToken : mapToken});
+const geocodingClient = mbxGeocoding({ accessToken: mapToken });
 
 module.exports.index = async (req, res) => {
   // Listing.find({}).then((res) => {
@@ -48,13 +48,13 @@ module.exports.createNewListing = async (req, res, next) => {
   if (result.error) {
     throw new ExpressError(400, result.error);
   }
-  let response = await geocodingClient.forwardGeocode({
-    query: req.body.listing.location,
-    limit:1,
-  })
-    .send()
-  console.log(response.body.features[0].geometry);
-  return res.send("done");
+  let response = await geocodingClient
+    .forwardGeocode({
+      query: req.body.listing.location,
+      limit: 1,
+    })
+    .send();
+  // res.send("done");
   let url = req.file.path;
   let filename = req.file.filename;
   console.log(url);
@@ -63,7 +63,10 @@ module.exports.createNewListing = async (req, res, next) => {
   console.log(req.user);
   newList.owner = req.user._id;
   newList.image = { url, filename };
-  await newList.save();
+  newList.geometry = response.body.features[0].geometry;
+  
+  let savedListing=   await newList.save();
+  console.log(savedListing);
   req.flash("success", "New listing created!");
   res.redirect("/listings");
 };
@@ -76,8 +79,8 @@ module.exports.renderEditForm = async (req, res) => {
     return res.redirect("/listings");
   }
   let originalImageUrl = listing.image.url;
-  originalImageUrl = originalImageUrl.replace("/upload","/upload/h_200,w_250")
-  res.render("listings/edit.ejs", { listing,originalImageUrl});
+  originalImageUrl = originalImageUrl.replace("/upload", "/upload/h_200,w_250");
+  res.render("listings/edit.ejs", { listing, originalImageUrl });
 };
 
 module.exports.updateListing = async (req, res) => {
