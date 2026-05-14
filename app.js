@@ -1,7 +1,6 @@
 if(process.env.NODE_ENV !="production"){
   require('dotenv').config();
 }
-// console.log(process.env.SECRET)
 const express = require("express");
 const mongoose = require("mongoose");
 const app = express();
@@ -11,9 +10,7 @@ const ejsMate = require("ejs-mate");
 const wrapAsync = require("./utils/wrapAsync.js");
 const ExpressError = require("./utils/ExpressError.js");
 const session = require("express-session");
-// const { stat } = require('fs');
-// const {listingSchema, reviewSchema} = require("./schema.js");
-// const Review = require("./models/review.js")
+const MongoStore = require("connect-mongo").default;
 const flash = require("connect-flash");
 const passport = require("passport");
 const localStrategy = require("passport-local");
@@ -24,6 +21,7 @@ const reviewsRouter = require("./routes/review.js");
 const usersRouter = require("./routes/user.js");
 const { setupPrimary } = require("cluster");
 
+
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
 app.use(express.urlencoded({ extended: true }));
@@ -32,8 +30,7 @@ app.use(methodOverride("_method"));
 app.engine("ejs", ejsMate);
 app.use(express.static(path.join(__dirname, "/public")));
 
-
-const MONGO_URL = "mongodb://127.0.0.1:27017/wanderlust";
+const dbUrl = process.env.ATLASDB_URL
 main()
   .then(() => {
     console.log("connnected to DB");
@@ -42,11 +39,22 @@ main()
     console.log(err);
   });
 async function main() {
-  await mongoose.connect(MONGO_URL);
+  await mongoose.connect(dbUrl);
 }
 
+const store = MongoStore.create({
+  mongoUrl: dbUrl,
+  crypto:{
+    secret: process.env.SECRET,
+  },
+  touchAfter:24*3600,
+})
+store.on("error",() =>{
+  console.log("ERROR IN mongo session store",err);
+})
 const sessionOptions = {
-  secret: "mysupersecretcode",
+  store,
+  secret: process.env.SECRET,
   resave: false,
   saveUninitialized: true,
   cookie: {
@@ -73,41 +81,15 @@ app.use((req, res, next) => {
   next();
 });
 
-// app.get("/demouser", async (req, res) => {
-//   let fakeUser = new User({
-//     email: "students@gmail.com",
-//     username: "newstudennt",
-//   });
-//   const registeredUser = await User.register(fakeUser, "helloWorld");
-//   res.send(registeredUser);
-// });
-app.get("/", (req, res) => {
-  res.send("Hi , I am root");
-});
 app.use("/listings", listingRouter);
 app.use("/listings/:id/reviews", reviewsRouter);
 app.use("/", usersRouter);
-// app.get("/testListing",async (req,res)=>{
-//     let SampleListing =new Listing({
-//         title:"My Villa",
-//         description :"By the beach",
-//         price : 1200,
-//         location:"Delhi",
-//         country:"India"
-//     })
-//     await SampleListing.save();
-//     console.log("sample was saved");
-//     res.send("Testing successful")
-// });
 
-//  app.all("*",(req,res,next) =>{
-//     next(new ExpressError(404,"PAGE NOT FOUND"));
-//  });
 
 app.use((req, res, next) => {
   next(new ExpressError(404, "PAGE NOT FOUND"));
 });
-//error handling middleware
+
 app.use((err, req, res, next) => {
   console.log(err);
   let { statusCode = 500, message = "ERROR" } = err;
